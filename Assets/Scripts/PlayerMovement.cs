@@ -10,8 +10,21 @@ public class PlayerMovement : MonoBehaviour {
 
     private float horizontalMove = 0f;
     private bool jump = false;
+    private bool onHook = false;
+    private DistanceJoint2D joint2D;
+    private SpriteRenderer sprite;
 
-    // Update is called once per frame
+    void Awake ()
+    {
+        joint2D = gameObject.GetComponent<DistanceJoint2D>();
+        sprite = gameObject.GetComponent<SpriteRenderer>();
+    }
+
+
+    void Start ()
+    {
+    }
+
     void Update () {
         // Get input
         horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed;
@@ -20,12 +33,32 @@ public class PlayerMovement : MonoBehaviour {
         {
             jump = true;
         }
+
+        if (Input.GetButtonDown("Hook") && !controller.m_Grounded)
+        {
+            Debug.Log("Hook pressed");
+            joint2D.enabled = true;
+            onHook = true;
+            sprite.color = Color.red;
+        }
+        if (onHook && (controller.m_Grounded || Input.GetButtonUp("Hook")))
+        {
+            Debug.Log("Hook released");
+            joint2D.enabled = false;
+            onHook = false;
+            sprite.color = Color.white;
+        }
+
     }
 
     void FixedUpdate()
     {
-        // Apply input
-        controller.Move(horizontalMove * Time.fixedDeltaTime, jump);
+        if (!onHook)
+        {
+            // Apply input
+            controller.Move(horizontalMove * Time.fixedDeltaTime, jump);
+        }
+
         jump = false;
     }
 }
